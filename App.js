@@ -52,18 +52,18 @@ const App: () => Node = () => {
     axios
       .get(BASE_URL + name)
       .then(res => {
-        const data = {...res.data};
-        let tempPokemon = {
-          nombre: data.name,
-          peso: data.weight,
-          altura: data.height * 10,
-          imgs: [
-            data.sprites.front_default || DEFAULT_SPRITE,
-            data.sprites.back_default || DEFAULT_SPRITE,
-          ],
-          id: data.id,
-        };
-        setPokemon(tempPokemon);
+        // const data = {...res.data};
+        // let tempPokemon = {
+        //   nombre: data.name,
+        //   peso: data.weight,
+        //   altura: data.height * 10,
+        //   imgs: [
+        //     data.sprites.front_default || DEFAULT_SPRITE,
+        //     data.sprites.back_default || DEFAULT_SPRITE,
+        //   ],
+        //   id: data.id,
+        // };
+        setPokemon(res.data);
       })
       .catch(err => {
         setLoading(false);
@@ -99,78 +99,185 @@ const App: () => Node = () => {
     <SafeAreaView style={[backgroundStyle, {flex: 1}]}>
       <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
       {!loading ? (
-        <View>
-          <TextInput
-            placeholder="Introduce nombre del pokemón"
-            style={{borderWidth: 1, color: '#000'}}
-            onChangeText={txt => setName(txt)}
-            ref={inputRef}
-            onSubmitEditing={() => {
-              setLoading(true);
-              searchPokemon();
-            }}
-            defaultValue={name}
-          />
-          <KeyboardAvoidingView
-            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
-            <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
+        <TouchableWithoutFeedback
+          style={{flex: 1}}
+          onPress={() => Keyboard.dismiss()}>
+          <View style={{flex: 1}}>
+            <TextInput
+              placeholder="Introduce nombre del pokemón"
+              style={{height: 60, borderWidth: 1, color: '#000'}}
+              onChangeText={txt => setName(txt)}
+              ref={inputRef}
+              onSubmitEditing={() => {
+                setLoading(true);
+                searchPokemon();
+              }}
+              defaultValue={name}
+            />
+
+            <View
+              style={{
+                justifyContent: 'space-evenly',
+                alignItems: 'flex-start',
+                flexDirection: 'row',
+                paddingTop: 60,
+              }}>
               <View
                 style={{
-                  height: 600,
-                  backgroundColor: '#ff0000',
-                  justifyContent: 'space-evenly',
-                  alignItems: 'flex-start',
-                  flexDirection: 'row',
-                  paddingTop: 60,
+                  marginLeft: 20,
+                  flex: 0.8,
+                  height: 120,
+                  backgroundColor: '#fff',
+                  borderWidth: 6,
+                  borderColor: '#000',
                 }}>
+                <Image
+                  source={
+                    pokemon.sprites
+                      ? {uri: pokemon.sprites.front_default}
+                      : {uri: DEFAULT_SPRITE}
+                  }
+                  style={{
+                    resizeMode: 'cover',
+                    width: '100%',
+                    height: '100%',
+                  }}
+                />
+              </View>
+              <View
+                style={{
+                  flex: 1,
+                  marginHorizontal: 20,
+                  justifyContent: 'space-between',
+                }}>
+                <Text style={{fontSize: 18, fontWeight: 'bold'}}>GENERAL</Text>
+                <Text style={{fontWeight: 'bold'}}>Nombre: {pokemon.name}</Text>
+                <Text style={{fontWeight: 'bold'}}>
+                  Tipo:
+                  {pokemon.types?.map((e, i) => {
+                    return (
+                      <Text key={i.toString()} style={{fontWeight: 'bold'}}>
+                        {' ' + e.type.name}
+                      </Text>
+                    );
+                  })}
+                </Text>
+                <Text style={{fontWeight: 'bold'}}>
+                  Peso: {pokemon.weight} lbs
+                </Text>
+                <Text style={{fontWeight: 'bold'}}>
+                  Mide: {pokemon.height} cm
+                </Text>
                 <View
                   style={{
-                    marginLeft: 20,
-                    flex: 0.8,
-                    height: 120,
-                    backgroundColor: '#fff',
-                    borderWidth: 6,
-                    borderColor: '#000',
-                  }}>
-                  <Image
-                    source={
-                      pokemon.imgs
-                        ? {uri: pokemon.imgs[0]}
-                        : {uri: DEFAULT_SPRITE}
-                    }
-                    style={{
-                      resizeMode: 'cover',
-                      width: '100%',
-                      height: '100%',
-                    }}
-                  />
-                </View>
-                <View
-                  style={{
-                    flex: 1,
-                    marginHorizontal: 20,
+                    flexDirection: 'row',
                     justifyContent: 'space-between',
                   }}>
-                  <Text style={{color: '#fff', fontWeight: 'bold'}}>
-                    Nombre: {pokemon.nombre}
+                  <Text style={{fontWeight: 'bold'}}>
+                    Exp: {pokemon.base_experience}
                   </Text>
-                  <Text style={{color: '#fff', fontWeight: 'bold'}}>
-                    Peso: {pokemon.peso} lbs
-                  </Text>
-                  <Text style={{color: '#fff', fontWeight: 'bold'}}>
-                    Mide: {pokemon.altura} cm
-                  </Text>
-                  <Text style={{color: '#fff', fontWeight: 'bold'}}>
-                    Id: {pokemon.id}
-                  </Text>
-                </View>
-                <View>
-                  <Text></Text>
+                  <Text style={{fontWeight: 'bold'}}>Id: {pokemon.id}</Text>
                 </View>
               </View>
-            </TouchableWithoutFeedback>
-          </KeyboardAvoidingView>
-        </View>
+            </View>
+
+            <View
+              style={{
+                padding: 20,
+                flexDirection: 'row',
+                justifyContent: 'space-between',
+              }}>
+              <View style={{flexDirection: 'column'}}>
+                <Text style={{fontSize: 18, fontWeight: 'bold'}}>Stats</Text>
+                <ScrollView style={{width: '100%', height: '25%'}}>
+                  {pokemon.stats?.map((e, i) => {
+                    return (
+                      <Text key={i.toString()} style={{fontWeight: 'bold'}}>
+                        {`${e.stat.name} : ${e.base_stat}`}
+                      </Text>
+                    );
+                  })}
+                </ScrollView>
+              </View>
+
+              <View style={{flexDirection: 'column'}}>
+                <Text style={{fontSize: 18, fontWeight: 'bold'}}>Ataques</Text>
+                <ScrollView style={{width: '100%', height: '25%'}}>
+                  {pokemon.moves?.map((e, i) => {
+                    return (
+                      <Text key={i.toString()} style={{fontWeight: 'bold'}}>
+                        {e.move.name}
+                      </Text>
+                    );
+                  })}
+                </ScrollView>
+              </View>
+
+              <View style={{flexDirection: 'column'}}>
+                <Text style={{fontSize: 18, fontWeight: 'bold'}}>
+                  Habilidades
+                </Text>
+                <ScrollView style={{width: '100%', height: '25%'}}>
+                  {pokemon.abilities?.map((e, i) => {
+                    return (
+                      <Text
+                        key={i.toString()}
+                        style={{fontWeight: 'bold', textAlign: 'center'}}>
+                        {e.ability.name}
+                      </Text>
+                    );
+                  })}
+                </ScrollView>
+              </View>
+            </View>
+
+            <View
+              style={{
+                marginHorizontal: 20,
+                flexDirection: 'row',
+                justifyContent: 'space-between',
+              }}>
+              <View style={{flexDirection: 'column'}}>
+                <Text style={{fontSize: 18, fontWeight: 'bold'}}>Formas</Text>
+                <ScrollView style={{width: '100%', height: '25%'}}>
+                  {pokemon.forms?.map((e, i) => {
+                    return (
+                      <Text key={i.toString()} style={{fontWeight: 'bold'}}>
+                        {e.name}
+                      </Text>
+                    );
+                  })}
+                </ScrollView>
+              </View>
+
+              <View style={{flexDirection: 'column'}}>
+                <Text style={{fontSize: 18, fontWeight: 'bold'}}>Items</Text>
+                <ScrollView style={{width: '100%', height: '25%'}}>
+                  {pokemon.held_items?.map((e, i) => {
+                    return (
+                      <Text key={i.toString()} style={{fontWeight: 'bold'}}>
+                        {e.item.name}
+                      </Text>
+                    );
+                  })}
+                </ScrollView>
+              </View>
+
+              <View style={{flexDirection: 'column'}}>
+                <Text style={{fontSize: 18, fontWeight: 'bold'}}>Juegos</Text>
+                <ScrollView style={{width: '100%', height: '25%'}}>
+                  {pokemon.game_indices?.map((e, i) => {
+                    return (
+                      <Text key={i.toString()} style={{fontWeight: 'bold'}}>
+                        {e.version.name}
+                      </Text>
+                    );
+                  })}
+                </ScrollView>
+              </View>
+            </View>
+          </View>
+        </TouchableWithoutFeedback>
       ) : (
         <ActivityIndicator size="large" color="#ff0000" />
       )}
