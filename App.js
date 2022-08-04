@@ -19,16 +19,15 @@ import {
   View,
   ActivityIndicator,
   Alert,
+  TouchableWithoutFeedback,
+  Keyboard,
+  Platform,
+  KeyboardAvoidingView,
+  Image,
 } from 'react-native';
 
-import {
-  Colors,
-  DebugInstructions,
-  Header,
-  LearnMoreLinks,
-  ReloadInstructions,
-} from 'react-native/Libraries/NewAppScreen';
-
+import {Colors} from 'react-native/Libraries/NewAppScreen';
+import {BASE_URL, DEFAULT_SPRITE} from './globals/base_urls';
 import SplashScreen from 'react-native-splash-screen';
 import axios from 'axios';
 
@@ -46,13 +45,25 @@ const App: () => Node = () => {
 
   const [name, setName] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [pokemon, setPokemon] = useState({});
   const inputRef = useRef(null);
-  // const [showAlert, setShowAlert] = useState(false);
+
   const searchPokemon = () => {
     axios
-      .get(`https://pokeapi.co/api/v2/pokemon/${name}`)
+      .get(BASE_URL + name)
       .then(res => {
-        console.log(res.data);
+        const data = {...res.data};
+        let tempPokemon = {
+          nombre: data.name,
+          peso: data.weight,
+          altura: data.height * 10,
+          imgs: [
+            data.sprites.front_default || DEFAULT_SPRITE,
+            data.sprites.back_default || DEFAULT_SPRITE,
+          ],
+          id: data.id,
+        };
+        setPokemon(tempPokemon);
       })
       .catch(err => {
         setLoading(false);
@@ -61,12 +72,10 @@ const App: () => Node = () => {
             showAlert();
           }
         }
+      })
+      .finally(() => {
+        setLoading(false);
       });
-    // .finally(() =>
-    //   setTimeout(() => {
-    //     setLoading(false);
-    //   }, 1000),
-    // );
   };
 
   const showAlert = () =>
@@ -87,20 +96,81 @@ const App: () => Node = () => {
     );
 
   return (
-    <SafeAreaView style={backgroundStyle}>
+    <SafeAreaView style={[backgroundStyle, {flex: 1}]}>
       <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
       {!loading ? (
-        <TextInput
-          placeholder="Introduce nombre del pokemón"
-          style={{borderWidth: 1, color: '#000'}}
-          onChangeText={txt => setName(txt)}
-          ref={inputRef}
-          onSubmitEditing={() => {
-            setLoading(true);
-            searchPokemon();
-          }}
-          defaultValue={name}
-        />
+        <View>
+          <TextInput
+            placeholder="Introduce nombre del pokemón"
+            style={{borderWidth: 1, color: '#000'}}
+            onChangeText={txt => setName(txt)}
+            ref={inputRef}
+            onSubmitEditing={() => {
+              setLoading(true);
+              searchPokemon();
+            }}
+            defaultValue={name}
+          />
+          <KeyboardAvoidingView
+            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+            <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
+              <View
+                style={{
+                  height: 600,
+                  backgroundColor: '#ff0000',
+                  justifyContent: 'space-evenly',
+                  alignItems: 'flex-start',
+                  flexDirection: 'row',
+                  paddingTop: 60,
+                }}>
+                <View
+                  style={{
+                    marginLeft: 20,
+                    flex: 0.8,
+                    height: 120,
+                    backgroundColor: '#fff',
+                    borderWidth: 6,
+                    borderColor: '#000',
+                  }}>
+                  <Image
+                    source={
+                      pokemon.imgs
+                        ? {uri: pokemon.imgs[0]}
+                        : {uri: DEFAULT_SPRITE}
+                    }
+                    style={{
+                      resizeMode: 'cover',
+                      width: '100%',
+                      height: '100%',
+                    }}
+                  />
+                </View>
+                <View
+                  style={{
+                    flex: 1,
+                    marginHorizontal: 20,
+                    justifyContent: 'space-between',
+                  }}>
+                  <Text style={{color: '#fff', fontWeight: 'bold'}}>
+                    Nombre: {pokemon.nombre}
+                  </Text>
+                  <Text style={{color: '#fff', fontWeight: 'bold'}}>
+                    Peso: {pokemon.peso} lbs
+                  </Text>
+                  <Text style={{color: '#fff', fontWeight: 'bold'}}>
+                    Mide: {pokemon.altura} cm
+                  </Text>
+                  <Text style={{color: '#fff', fontWeight: 'bold'}}>
+                    Id: {pokemon.id}
+                  </Text>
+                </View>
+                <View>
+                  <Text></Text>
+                </View>
+              </View>
+            </TouchableWithoutFeedback>
+          </KeyboardAvoidingView>
+        </View>
       ) : (
         <ActivityIndicator size="large" color="#ff0000" />
       )}
