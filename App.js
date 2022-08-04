@@ -66,12 +66,12 @@ const App: () => Node = () => {
   const [visible, setVisible] = useState(false);
   const capturados = useSelector(state => state.catch.pokemon);
   const inputRef = useRef(null);
-  const state = useSelector(state => state);
   const dispatch = useDispatch();
-  console.log(capturados);
+
   const searchPokemon = () => {
+    let valid = name.toLowerCase();
     axios
-      .get(BASE_URL + name)
+      .get(BASE_URL + valid)
       .then(res => {
         setPokemon(res.data);
         setLoading(false);
@@ -104,13 +104,13 @@ const App: () => Node = () => {
     );
 
   const handleCatch = () => {
-    if (pokemon != null || pokemon != {}) {
-    }
-    dispatch({type: 'catchPokemon', payload: pokemon});
+    if (pokemon.name) {
+      dispatch({type: 'catchPokemon', payload: pokemon});
+      alert('pokemon capturado');
+    } else alert('No hay pokemon a la vista');
   };
 
   const _renderItem = item => {
-    console.log('Item', item);
     return (
       <View>
         <Text>name:{item.name}</Text>
@@ -128,7 +128,7 @@ const App: () => Node = () => {
           <View style={{flex: 1}}>
             <TextInput
               placeholder="Introduce nombre del pokemón"
-              style={{height: 60, borderWidth: 1, color: '#000'}}
+              style={styles.input}
               onChangeText={txt => setName(txt)}
               ref={inputRef}
               onSubmitEditing={() => {
@@ -137,54 +137,30 @@ const App: () => Node = () => {
               }}
               defaultValue={name}
             />
-
-            <View
-              style={{
-                justifyContent: 'space-evenly',
-                alignItems: 'flex-start',
-                flexDirection: 'row',
-                paddingTop: 60,
-              }}>
-              <View
-                style={{
-                  marginLeft: 20,
-                  flex: 0.8,
-                  height: 120,
-                  backgroundColor: '#fff',
-                  borderWidth: 6,
-                  borderColor: '#000',
-                }}>
+            <Button
+              title="Ver mis pokemones"
+              color="#ff0000"
+              style={{position: 'absolute', top: 0}}
+              onPress={() => setVisible(true)}></Button>
+            <View style={styles.headContainer}>
+              <View style={styles.imgContainer}>
                 <ImageBackground
                   source={
                     pokemon.sprites
                       ? {uri: pokemon.sprites.front_default}
                       : {uri: DEFAULT_SPRITE}
                   }
-                  style={{
-                    resizeMode: 'cover',
-                    width: '100%',
-                    height: '100%',
-                  }}></ImageBackground>
+                  style={styles.spriteImg}></ImageBackground>
               </View>
-              <View
-                style={{
-                  flex: 1,
-                  marginHorizontal: 20,
-                  justifyContent: 'space-between',
-                }}>
-                <Text style={{fontSize: 18, fontWeight: 'bold'}}>GENERAL</Text>
+              <View style={styles.generalInfoContainer}>
+                <Text style={styles.infoTitle}>General</Text>
                 <TouchableWithoutFeedback onPress={() => handleCatch()}>
                   <Image
                     source={require('./assets/imgs/pokeball_front.png')}
-                    style={{
-                      position: 'absolute',
-                      right: 20,
-                      width: 25,
-                      height: 25,
-                    }}></Image>
+                    style={styles.catchPokeballImg}></Image>
                 </TouchableWithoutFeedback>
-                <Text style={{fontWeight: 'bold'}}>Nombre: {pokemon.name}</Text>
-                <Text style={{fontWeight: 'bold'}}>
+                <Text style={styles.singleTitle}>Nombre: {pokemon.name}</Text>
+                <Text style={styles.singleTitle}>
                   Tipo:
                   {pokemon.types?.map((e, i) => {
                     return (
@@ -194,38 +170,29 @@ const App: () => Node = () => {
                     );
                   })}
                 </Text>
-                <Text style={{fontWeight: 'bold'}}>
+                <Text style={styles.singleTitle}>
                   Peso: {pokemon.weight} lbs
                 </Text>
-                <Text style={{fontWeight: 'bold'}}>
+                <Text style={styles.singleTitle}>
                   Mide: {pokemon.height != undefined ? pokemon.height * 10 : 0}{' '}
                   cm
                 </Text>
-                <View
-                  style={{
-                    flexDirection: 'row',
-                    justifyContent: 'space-between',
-                  }}>
-                  <Text style={{fontWeight: 'bold'}}>
+                <View style={styles.id_exp_Container}>
+                  <Text style={styles.singleTitle}>
                     Exp: {pokemon.base_experience}
                   </Text>
-                  <Text style={{fontWeight: 'bold'}}>Id: {pokemon.id}</Text>
+                  <Text style={styles.singleTitle}>Id: {pokemon.id}</Text>
                 </View>
               </View>
             </View>
 
-            <View
-              style={{
-                padding: 20,
-                flexDirection: 'row',
-                justifyContent: 'space-between',
-              }}>
+            <View style={styles.rowContainer}>
               <View style={{flexDirection: 'column'}}>
-                <Text style={{fontSize: 18, fontWeight: 'bold'}}>Stats</Text>
+                <Text style={styles.infoTitle}>Stats</Text>
                 <ScrollView style={{width: '100%', height: '25%'}}>
                   {pokemon.stats?.map((e, i) => {
                     return (
-                      <Text key={i.toString()} style={{fontWeight: 'bold'}}>
+                      <Text key={i.toString()} style={styles.singleTitle}>
                         {`${e.stat.name} : ${e.base_stat}`}
                       </Text>
                     );
@@ -234,11 +201,11 @@ const App: () => Node = () => {
               </View>
 
               <View style={{flexDirection: 'column'}}>
-                <Text style={{fontSize: 18, fontWeight: 'bold'}}>Ataques</Text>
+                <Text style={styles.infoTitle}>Ataques</Text>
                 <ScrollView style={{width: '100%', height: '25%'}}>
                   {pokemon.moves?.map((e, i) => {
                     return (
-                      <Text key={i.toString()} style={{fontWeight: 'bold'}}>
+                      <Text key={i.toString()} style={styles.singleTitle}>
                         {e.move.name}
                       </Text>
                     );
@@ -247,9 +214,7 @@ const App: () => Node = () => {
               </View>
 
               <View style={{flexDirection: 'column'}}>
-                <Text style={{fontSize: 18, fontWeight: 'bold'}}>
-                  Habilidades
-                </Text>
+                <Text style={styles.infoTitle}>Habilidades</Text>
                 <ScrollView style={{width: '100%', height: '25%'}}>
                   {pokemon.abilities?.map((e, i) => {
                     return (
@@ -264,18 +229,13 @@ const App: () => Node = () => {
               </View>
             </View>
 
-            <View
-              style={{
-                marginHorizontal: 20,
-                flexDirection: 'row',
-                justifyContent: 'space-between',
-              }}>
+            <View style={styles.rowContainer}>
               <View style={{flexDirection: 'column'}}>
-                <Text style={{fontSize: 18, fontWeight: 'bold'}}>Formas</Text>
+                <Text style={styles.infoTitle}>Formas</Text>
                 <ScrollView style={{width: '100%', height: '25%'}}>
                   {pokemon.forms?.map((e, i) => {
                     return (
-                      <Text key={i.toString()} style={{fontWeight: 'bold'}}>
+                      <Text key={i.toString()} style={styles.singleTitle}>
                         {e.name}
                       </Text>
                     );
@@ -284,11 +244,11 @@ const App: () => Node = () => {
               </View>
 
               <View style={{flexDirection: 'column'}}>
-                <Text style={{fontSize: 18, fontWeight: 'bold'}}>Items</Text>
+                <Text style={styles.infoTitle}>Items</Text>
                 <ScrollView style={{width: '100%', height: '25%'}}>
                   {pokemon.held_items?.map((e, i) => {
                     return (
-                      <Text key={i.toString()} style={{fontWeight: 'bold'}}>
+                      <Text key={i.toString()} style={styles.singleTitle}>
                         {e.item.name}
                       </Text>
                     );
@@ -296,12 +256,14 @@ const App: () => Node = () => {
                 </ScrollView>
               </View>
 
-              <View style={{flexDirection: 'column'}}>
-                <Text style={{fontSize: 18, fontWeight: 'bold'}}>Juegos</Text>
+              <View
+                onStartShouldSetResponder={() => true}
+                style={{flexDirection: 'column'}}>
+                <Text style={styles.infoTitle}>Juegos</Text>
                 <ScrollView style={{width: '100%', height: '25%'}}>
                   {pokemon.game_indices?.map((e, i) => {
                     return (
-                      <Text key={i.toString()} style={{fontWeight: 'bold'}}>
+                      <Text key={i.toString()} style={styles.singleTitle}>
                         {e.version.name}
                       </Text>
                     );
@@ -309,11 +271,6 @@ const App: () => Node = () => {
                 </ScrollView>
               </View>
             </View>
-            <Button
-              title="Ver mis pokemones"
-              color="#ff0000"
-              style={{position: 'absolute', bottom: 0}}
-              onPress={() => setVisible(true)}></Button>
             <Modal
               animationType="slide"
               transparent={true}
@@ -328,26 +285,75 @@ const App: () => Node = () => {
                     <FlatList
                       data={capturados}
                       renderItem={item => _renderItem(item.item)}
-                      keyExtractor={item => item.id}
+                      keyExtractor={(item, index) => index.toString() + item.id}
                     />
                   ) : (
                     <View style={{flex: 1}}>
                       <Text>Aun No Hay</Text>
                     </View>
                   )}
+                  <Button
+                    title={'Salir'}
+                    onPress={() => setVisible(false)}
+                    color="#ff0000"></Button>
                 </View>
               </View>
             </Modal>
           </View>
         </TouchableWithoutFeedback>
       ) : (
-        <ActivityIndicator size="large" color="#ff0000" />
+        <View style={styles.indicatorContainer}>
+          <ActivityIndicator size="large" color="#ff0000" />
+        </View>
       )}
     </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
+  input: {height: 60, borderWidth: 1, color: '#000'},
+  headContainer: {
+    justifyContent: 'space-evenly',
+    alignItems: 'flex-start',
+    flexDirection: 'row',
+    paddingTop: 30,
+  },
+  imgContainer: {
+    marginLeft: 20,
+    flex: 0.8,
+    height: 120,
+    backgroundColor: '#fff',
+    borderWidth: 6,
+    borderColor: '#000',
+  },
+  spriteImg: {
+    resizeMode: 'cover',
+    width: '100%',
+    height: '100%',
+  },
+  generalInfoContainer: {
+    flex: 1,
+    marginHorizontal: 20,
+    justifyContent: 'space-between',
+  },
+  catchPokeballImg: {
+    position: 'absolute',
+    right: 20,
+    width: 25,
+    height: 25,
+  },
+  infoTitle: {fontSize: 14, fontWeight: 'bold', color: '#000'},
+  singleTitle: {fontSize: 12, fontWeight: 'bold'},
+
+  id_exp_Container: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  rowContainer: {
+    marginHorizontal: 20,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
   centeredView: {
     flex: 1,
     justifyContent: 'center',
@@ -371,6 +377,7 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 5,
   },
+  indicatorContainer: {flex: 1, justifyContent: 'center', alignItems: 'center'},
   button: {
     borderRadius: 20,
     padding: 10,
