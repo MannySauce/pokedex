@@ -3,9 +3,13 @@ import {
   ImageBackground,
   Image,
   TouchableWithoutFeedBack,
-  Text
-} from 
-const HeadInfo = () => {
+  Text,
+  StyleSheet,
+} from 'react-native';
+import {DEFAULT_SPRITE} from '../globals/base_urls';
+const HeadInfo = props => {
+  const DEFAULT = DEFAULT_SPRITE;
+  const {pokemon} = props.data.pokemon;
   return (
     <View style={styles.headContainer}>
       <View style={styles.imgContainer}>
@@ -13,15 +17,15 @@ const HeadInfo = () => {
           source={
             pokemon.sprites
               ? {uri: pokemon.sprites.front_default}
-              : {uri: DEFAULT_SPRITE}
+              : {uri: DEFAULT}
           }
           style={styles.spriteImg}></ImageBackground>
       </View>
       <View style={styles.generalInfoContainer}>
         <Text style={styles.infoTitle}>General</Text>
-        <TouchableWithoutFeedback onPress={() => handleCatch()}>
+        <TouchableWithoutFeedback onPress={() => props.handleCatch()}>
           <Image
-            source={require('./assets/imgs/pokeball_front.png')}
+            source={require('../assets/imgs/pokeball_front.png')}
             style={styles.catchPokeballImg}></Image>
         </TouchableWithoutFeedback>
         <Text style={styles.singleTitle}>Nombre: {pokemon.name}</Text>
@@ -48,4 +52,44 @@ const HeadInfo = () => {
   );
 };
 
-export default HeadInfo
+export default HeadInfo;
+
+const styles = StyleSheet.create({
+  headContainer: {
+    justifyContent: 'space-evenly',
+    alignItems: 'flex-start',
+    flexDirection: 'row',
+    paddingTop: 30,
+  },
+  imgContainer: {
+    marginLeft: 20,
+    flex: 0.8,
+    height: 120,
+    backgroundColor: '#fff',
+    borderWidth: 6,
+    borderColor: '#000',
+  },
+  spriteImg: {
+    resizeMode: 'cover',
+    width: '100%',
+    height: '100%',
+  },
+  generalInfoContainer: {
+    flex: 1,
+    marginHorizontal: 20,
+    justifyContent: 'space-between',
+  },
+  catchPokeballImg: {
+    position: 'absolute',
+    right: 20,
+    width: 25,
+    height: 25,
+  },
+  infoTitle: {fontSize: 14, fontWeight: 'bold', color: '#000'},
+  singleTitle: {fontSize: 12, fontWeight: 'bold'},
+
+  id_exp_Container: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+});
