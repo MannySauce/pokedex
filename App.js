@@ -40,7 +40,7 @@ import {useSelector, useDispatch} from 'react-redux';
 import {bindActionCreators} from 'redux';
 import {catchPokemon, releasePokemon} from './state/actions/index';
 import axios from 'axios';
-import HeadInfo from './components/HeadInfo';
+
 const AppWrapper = () => {
   useEffect(() => {
     // do stuff while splash screen is shown
@@ -143,9 +143,53 @@ const App: () => Node = () => {
               style={{position: 'absolute', top: 0}}
               onPress={() => setVisible(true)}></Button>
 
-            <HeadInfo handleCatch={handleCatch} data={pokemon}></HeadInfo>
+            <View style={styles.headContainer}>
+              <View style={styles.imgContainer}>
+                <ImageBackground
+                  source={
+                    pokemon.sprites
+                      ? {uri: pokemon.sprites.front_default}
+                      : {uri: DEFAULT_SPRITE}
+                  }
+                  style={styles.spriteImg}></ImageBackground>
+              </View>
+              <View style={styles.generalInfoContainer}>
+                <Text style={styles.infoTitle}>General</Text>
+                <TouchableWithoutFeedback onPress={() => handleCatch()}>
+                  <Image
+                    source={require('./assets/imgs/pokeball_front.png')}
+                    style={styles.catchPokeballImg}></Image>
+                </TouchableWithoutFeedback>
+                <Text style={styles.singleTitle}>Nombre: {pokemon.name}</Text>
+                <Text style={styles.singleTitle}>
+                  Tipo:
+                  {pokemon.types?.map((e, i) => {
+                    return (
+                      <Text key={i.toString()} style={{fontWeight: 'bold'}}>
+                        {' ' + e.type.name}
+                      </Text>
+                    );
+                  })}
+                </Text>
+                <Text style={styles.singleTitle}>
+                  Peso: {pokemon.weight} lbs
+                </Text>
+                <Text style={styles.singleTitle}>
+                  Mide: {pokemon.height != undefined ? pokemon.height * 10 : 0}{' '}
+                  cm
+                </Text>
+                <View style={styles.id_exp_Container}>
+                  <Text style={styles.singleTitle}>
+                    Exp: {pokemon.base_experience}
+                  </Text>
+                  <Text style={styles.singleTitle}>Id: {pokemon.id}</Text>
+                </View>
+              </View>
+            </View>
 
-            <View style={styles.rowContainer}>
+            <View
+              onStartShouldSetResponder={() => true}
+              style={styles.rowContainer}>
               <View style={{flexDirection: 'column'}}>
                 <Text style={styles.infoTitle}>Stats</Text>
                 <ScrollView style={{width: '100%', height: '25%'}}>
@@ -159,20 +203,9 @@ const App: () => Node = () => {
                 </ScrollView>
               </View>
 
-              <View style={{flexDirection: 'column'}}>
-                <Text style={styles.infoTitle}>Ataques</Text>
-                <ScrollView style={{width: '100%', height: '25%'}}>
-                  {pokemon.moves?.map((e, i) => {
-                    return (
-                      <Text key={i.toString()} style={styles.singleTitle}>
-                        {e.move.name}
-                      </Text>
-                    );
-                  })}
-                </ScrollView>
-              </View>
-
-              <View style={{flexDirection: 'column'}}>
+              <View
+                onStartShouldSetResponder={() => true}
+                style={{flexDirection: 'column'}}>
                 <Text style={styles.infoTitle}>Habilidades</Text>
                 <ScrollView style={{width: '100%', height: '25%'}}>
                   {pokemon.abilities?.map((e, i) => {
@@ -186,10 +219,27 @@ const App: () => Node = () => {
                   })}
                 </ScrollView>
               </View>
+
+              <View
+                onStartShouldSetResponder={() => true}
+                style={{flexDirection: 'column'}}>
+                <Text style={styles.infoTitle}>Ataques</Text>
+                <ScrollView style={{width: '100%', height: '25%'}}>
+                  {pokemon.moves?.map((e, i) => {
+                    return (
+                      <Text key={i.toString()} style={styles.singleTitle}>
+                        {e.move.name}
+                      </Text>
+                    );
+                  })}
+                </ScrollView>
+              </View>
             </View>
 
             <View style={styles.rowContainer}>
-              <View style={{flexDirection: 'column'}}>
+              <View
+                onStartShouldSetResponder={() => true}
+                style={{flexDirection: 'column'}}>
                 <Text style={styles.infoTitle}>Formas</Text>
                 <ScrollView style={{width: '100%', height: '25%'}}>
                   {pokemon.forms?.map((e, i) => {
@@ -202,7 +252,9 @@ const App: () => Node = () => {
                 </ScrollView>
               </View>
 
-              <View style={{flexDirection: 'column'}}>
+              <View
+                onStartShouldSetResponder={() => true}
+                style={{flexDirection: 'column'}}>
                 <Text style={styles.infoTitle}>Items</Text>
                 <ScrollView style={{width: '100%', height: '25%'}}>
                   {pokemon.held_items?.map((e, i) => {
