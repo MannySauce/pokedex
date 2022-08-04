@@ -24,19 +24,36 @@ import {
   Platform,
   KeyboardAvoidingView,
   Image,
+  ImageBackground,
+  Button,
+  Modal,
+  Pressable,
+  FlatList,
 } from 'react-native';
 
 import {Colors} from 'react-native/Libraries/NewAppScreen';
 import {BASE_URL, DEFAULT_SPRITE} from './globals/base_urls';
 import SplashScreen from 'react-native-splash-screen';
+import {Provider} from 'react-redux';
+import {store} from './state/store';
+import {useSelector, useDispatch} from 'react-redux';
+import {bindActionCreators} from 'redux';
+import {catchPokemon, releasePokemon} from './state/actions/index';
 import axios from 'axios';
 
-const App: () => Node = () => {
+const AppWrapper = () => {
   useEffect(() => {
     // do stuff while splash screen is shown
     // After having done stuff (such as async tasks) hide the splash screen
     SplashScreen.hide();
   }, []);
+  return (
+    <Provider store={store}>
+      <App />
+    </Provider>
+  );
+};
+const App: () => Node = () => {
   const isDarkMode = useColorScheme() === 'dark';
 
   const backgroundStyle = {
@@ -46,24 +63,18 @@ const App: () => Node = () => {
   const [name, setName] = useState(null);
   const [loading, setLoading] = useState(false);
   const [pokemon, setPokemon] = useState({});
+  const [visible, setVisible] = useState(false);
+  const capturados = useSelector(state => state.catch.pokemon);
   const inputRef = useRef(null);
-
+  const state = useSelector(state => state);
+  const dispatch = useDispatch();
+  console.log(capturados);
   const searchPokemon = () => {
     axios
       .get(BASE_URL + name)
       .then(res => {
-        // const data = {...res.data};
-        // let tempPokemon = {
-        //   nombre: data.name,
-        //   peso: data.weight,
-        //   altura: data.height * 10,
-        //   imgs: [
-        //     data.sprites.front_default || DEFAULT_SPRITE,
-        //     data.sprites.back_default || DEFAULT_SPRITE,
-        //   ],
-        //   id: data.id,
-        // };
         setPokemon(res.data);
+        setLoading(false);
       })
       .catch(err => {
         setLoading(false);
@@ -72,9 +83,6 @@ const App: () => Node = () => {
             showAlert();
           }
         }
-      })
-      .finally(() => {
-        setLoading(false);
       });
   };
 
@@ -94,6 +102,21 @@ const App: () => Node = () => {
         onDismiss: () => setTimeout(() => inputRef.current.focus(), 0),
       },
     );
+
+  const handleCatch = () => {
+    if (pokemon != null || pokemon != {}) {
+    }
+    dispatch({type: 'catchPokemon', payload: pokemon});
+  };
+
+  const _renderItem = item => {
+    console.log('Item', item);
+    return (
+      <View>
+        <Text>name:{item.name}</Text>
+      </View>
+    );
+  };
 
   return (
     <SafeAreaView style={[backgroundStyle, {flex: 1}]}>
@@ -131,7 +154,7 @@ const App: () => Node = () => {
                   borderWidth: 6,
                   borderColor: '#000',
                 }}>
-                <Image
+                <ImageBackground
                   source={
                     pokemon.sprites
                       ? {uri: pokemon.sprites.front_default}
@@ -141,8 +164,7 @@ const App: () => Node = () => {
                     resizeMode: 'cover',
                     width: '100%',
                     height: '100%',
-                  }}
-                />
+                  }}></ImageBackground>
               </View>
               <View
                 style={{
@@ -151,6 +173,16 @@ const App: () => Node = () => {
                   justifyContent: 'space-between',
                 }}>
                 <Text style={{fontSize: 18, fontWeight: 'bold'}}>GENERAL</Text>
+                <TouchableWithoutFeedback onPress={() => handleCatch()}>
+                  <Image
+                    source={require('./assets/imgs/pokeball_front.png')}
+                    style={{
+                      position: 'absolute',
+                      right: 20,
+                      width: 25,
+                      height: 25,
+                    }}></Image>
+                </TouchableWithoutFeedback>
                 <Text style={{fontWeight: 'bold'}}>Nombre: {pokemon.name}</Text>
                 <Text style={{fontWeight: 'bold'}}>
                   Tipo:
@@ -166,7 +198,8 @@ const App: () => Node = () => {
                   Peso: {pokemon.weight} lbs
                 </Text>
                 <Text style={{fontWeight: 'bold'}}>
-                  Mide: {pokemon.height} cm
+                  Mide: {pokemon.height != undefined ? pokemon.height * 10 : 0}{' '}
+                  cm
                 </Text>
                 <View
                   style={{
@@ -276,6 +309,35 @@ const App: () => Node = () => {
                 </ScrollView>
               </View>
             </View>
+            <Button
+              title="Ver mis pokemones"
+              color="#ff0000"
+              style={{position: 'absolute', bottom: 0}}
+              onPress={() => setVisible(true)}></Button>
+            <Modal
+              animationType="slide"
+              transparent={true}
+              visible={visible}
+              onBackPress={() => setVisible(!visible)}
+              onRequestClose={() => {
+                setVisible(!visible);
+              }}>
+              <View style={styles.centeredView}>
+                <View style={styles.modalView}>
+                  {capturados ? (
+                    <FlatList
+                      data={capturados}
+                      renderItem={item => _renderItem(item.item)}
+                      keyExtractor={item => item.id}
+                    />
+                  ) : (
+                    <View style={{flex: 1}}>
+                      <Text>Aun No Hay</Text>
+                    </View>
+                  )}
+                </View>
+              </View>
+            </Modal>
           </View>
         </TouchableWithoutFeedback>
       ) : (
@@ -285,6 +347,50 @@ const App: () => Node = () => {
   );
 };
 
-const styles = StyleSheet.create({});
+const styles = StyleSheet.create({
+  centeredView: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 22,
+  },
+  modalView: {
+    height: '80%',
+    width: '70%',
+    margin: 20,
+    backgroundColor: 'white',
+    borderRadius: 20,
+    padding: 35,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  button: {
+    borderRadius: 20,
+    padding: 10,
+    elevation: 2,
+  },
+  buttonOpen: {
+    backgroundColor: '#F194FF',
+  },
+  buttonClose: {
+    backgroundColor: '#2196F3',
+  },
+  textStyle: {
+    color: 'white',
+    fontWeight: 'bold',
+    textAlign: 'center',
+  },
+  modalText: {
+    marginBottom: 15,
+    textAlign: 'center',
+  },
+});
 
-export default App;
+export default AppWrapper;
