@@ -6,7 +6,7 @@
  * @flow strict-local
  */
 
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useState, useRef} from 'react';
 import type {Node} from 'react';
 import {
   SafeAreaView,
@@ -17,6 +17,8 @@ import {
   useColorScheme,
   TextInput,
   View,
+  ActivityIndicator,
+  Alert,
 } from 'react-native';
 
 import {
@@ -44,28 +46,64 @@ const App: () => Node = () => {
 
   const [name, setName] = useState(null);
   const [loading, setLoading] = useState(false);
-
+  const inputRef = useRef(null);
+  // const [showAlert, setShowAlert] = useState(false);
   const searchPokemon = () => {
-    console.log('entered');
     axios
       .get(`https://pokeapi.co/api/v2/pokemon/${name}`)
-      .then(function (response) {
-        console.log(response);
+      .then(res => {
+        console.log(res.data);
+      })
+      .catch(err => {
+        setLoading(false);
+        if (err.response) {
+          if (err.response.status == 404) {
+            showAlert();
+          }
+        }
       });
+    // .finally(() =>
+    //   setTimeout(() => {
+    //     setLoading(false);
+    //   }, 1000),
+    // );
   };
-  console.log(name);
+
+  const showAlert = () =>
+    Alert.alert(
+      'Pokemón No Encontrado!',
+      'Porfavor intente con otro nombre',
+      [
+        {
+          text: 'Cancel',
+          onPress: () => setTimeout(() => inputRef.current.focus(), 50),
+          style: 'cancel',
+        },
+      ],
+      {
+        cancelable: true,
+        onDismiss: () => setTimeout(() => inputRef.current.focus(), 0),
+      },
+    );
+
   return (
     <SafeAreaView style={backgroundStyle}>
       <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
-      <TextInput
-        placeholder="Introduce nombre del pokemón"
-        style={{borderWidth: 1, color: '#000'}}
-        onChangeText={txt => setName(txt)}
-        onSubmitEditing={() => {
-          searchPokemon();
-        }}
-        defaultValue={name}
-      />
+      {!loading ? (
+        <TextInput
+          placeholder="Introduce nombre del pokemón"
+          style={{borderWidth: 1, color: '#000'}}
+          onChangeText={txt => setName(txt)}
+          ref={inputRef}
+          onSubmitEditing={() => {
+            setLoading(true);
+            searchPokemon();
+          }}
+          defaultValue={name}
+        />
+      ) : (
+        <ActivityIndicator size="large" color="#ff0000" />
+      )}
     </SafeAreaView>
   );
 };
